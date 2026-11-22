@@ -106,6 +106,25 @@ svg g{transform-box:fill-box;transform-origin:50% 100%}
 svg g:hover{transform:scale(1.2,1.04);opacity:1}
 svg g:hover + g,svg g:has(+ g:hover){transform:scale(1.08,1.015)}
 @media (hover:none){.kpi:active,.adv:active,tbody tr:active{transform:scale(1.04)}.btn:active,.lk:active{transform:scale(.94)}}
+:root:root:root{color-scheme:dark;--bg:#000000;--surface:#0D0F10;--ink:#FFFFFF;--muted:#B4BEC1;--line:#33393C;--sales:#2EE6A6;--exp:#FFB020;--adv:#FF5CAA;--hi:#10382D;--bad:#FF6B6B}
+body{background:#000;color:#fff}
+.kpi b{color:var(--c);text-shadow:0 0 18px color-mix(in srgb,var(--c) 35%,transparent)}
+.kpi{background:linear-gradient(160deg,#15191A,#0A0B0C)}
+.box{background:#0D0F10;border-color:#3A4144}
+th{color:#C9D2D4}
+svg text{fill:#C9D2D4}
+.btn{color:#031410;font-weight:700}
+.btn.g{color:#E8EEF0;border-color:#4A5256}
+.tabs button[aria-selected="true"]{color:#fff;border-color:var(--sales);text-shadow:0 0 14px rgba(46,230,166,.5)}
+input,select{background:#15191A;border-color:#4A5256;color:#fff}
+input::placeholder{color:#7F8B8F}
+.ok{color:var(--sales)}
+.kpi:hover{box-shadow:0 10px 30px color-mix(in srgb,var(--c) 30%,transparent)}
+.btn:hover{box-shadow:0 8px 22px rgba(46,230,166,.35)}
+input:hover,select:hover,input:focus,select:focus{box-shadow:0 0 0 2px rgba(46,230,166,.35)}
+tbody tr:hover{filter:none}
+.adv:hover{box-shadow:0 8px 22px rgba(255,92,170,.2)}
+.note{background:#10382D;color:#fff}
 </style>
 </head>
 <body>
