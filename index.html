@@ -142,6 +142,19 @@ th,td{border-bottom-color:rgba(255,255,255,.10)}
 .tabs{border-bottom-color:rgba(255,255,255,.14)}
 .adv .track{background:rgba(255,255,255,.10)}
 .kpi:hover,.box:hover,.adv:hover{border-color:rgba(255,255,255,.3)}
+#printArea{display:none}
+@media print{
+body.printing>*:not(#printArea){display:none!important}
+body.printing{background:#fff!important;color:#000!important}
+body.printing::before{display:none!important}
+body.printing #printArea{display:block!important;color:#000;background:#fff;direction:rtl;padding:8mm;font-size:12px}
+#printArea table{width:100%;border-collapse:collapse;margin:6px 0 14px;min-width:0}
+#printArea th,#printArea td{border:1px solid #888;padding:4px 7px;text-align:start;color:#000;background:#fff}
+#printArea th{background:#eee}
+#printArea h1{font-size:19px;margin:0 0 6px}
+#printArea h2{font-size:14px;margin:12px 0 4px}
+.sig{margin-top:36px;display:flex;justify-content:space-between}
+}
 </style>
 </head>
 <body>
@@ -162,10 +175,13 @@ th,td{border-bottom-color:rgba(255,255,255,.10)}
 </div>
 
 <section class="panel" id="a">
+<div id="miss" class="note" hidden style="margin-bottom:14px"></div>
+<div style="margin-bottom:12px"><button class="btn g" id="prm">طباعة كشف الشهر</button></div>
 <div class="kpis" id="kpis"></div>
 <div class="box"><h2>المبيعات والمصروفات كل يوم</h2>
 <div class="legend"><span><i style="background:var(--sales)"></i>مبيعات</span><span><i style="background:var(--exp)"></i>مصروفات</span></div>
 <div class="chart"><svg id="chart" viewBox="0 0 720 260" role="img" aria-label="رسم بياني يومي"></svg></div></div>
+<div class="box tw"><h2>مقارنة بالشهر اللي قبله</h2><div id="cmp"></div></div>
 <div class="note">السلفيات داخلة في المصروفات أصلاً، فصافي الربح = المبيعات − المصروفات.</div>
 <div class="box tw" style="margin-top:18px"><h2>ملخص كل الشهور</h2><table><thead><tr><th>الشهر</th><th class="n">مبيعات</th><th class="n">مصروفات</th><th class="n">الصافي</th><th class="n">سلفيات</th></tr></thead><tbody id="mrows"></tbody></table></div>
 </section>
@@ -219,12 +235,13 @@ th,td{border-bottom-color:rgba(255,255,255,.10)}
 <div><label for="bnote">ملاحظة</label><input id="bnote"></div>
 <div><button class="btn" id="bsave">حفظ الزيادة</button></div></div>
 <div class="msg" id="bpv"></div><div class="ok" id="bok"></div></div>
-<div class="box tw"><h2>مرتبات الشهر</h2><table><thead><tr><th>الموظف</th><th>المرتب الشهري</th><th>أيام الشغل (اختياري)</th><th class="n">المرتب المستحق</th><th class="n">السلف</th><th class="n">الخصومات</th><th class="n">الزيادات</th><th class="n">الصافي</th></tr></thead><tbody id="prow"></tbody><tfoot id="pfoot"></tfoot></table><p class="msg">المرتب المستحق = المرتب الشهري، أو (أيام الشغل × قيمة اليوم) لو كتبت أيام الشغل. الصافي = المستحق − السلف − الخصومات + الزيادات. قيمة اليوم = المرتب ÷ 30. لو كتبت أيام الشغل متسجلش خصم أيام تاني عشان ميتحسبش مرتين.</p></div>
+<div class="box tw"><h2>مرتبات الشهر</h2><table><thead><tr><th>الموظف</th><th>المرتب الشهري</th><th>أيام الشغل (اختياري)</th><th class="n">المرتب المستحق</th><th class="n">السلف</th><th class="n">الخصومات</th><th class="n">الزيادات</th><th class="n">الصافي</th><th>الدفع</th></tr></thead><tbody id="prow"></tbody><tfoot id="pfoot"></tfoot></table><p class="msg">المرتب المستحق = المرتب الشهري، أو (أيام الشغل × قيمة اليوم) لو كتبت أيام الشغل. الصافي = المستحق − السلف − الخصومات + الزيادات. قيمة اليوم = المرتب ÷ 30. لو كتبت أيام الشغل متسجلش خصم أيام تاني عشان ميتحسبش مرتين.</p></div>
 <div class="box tw"><h2>سجل الخصومات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody id="drows"></tbody></table></div>
 <div class="box tw"><h2>سجل الزيادات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody id="brows"></tbody></table></div>
 </section>
 </div>
 
+<div id="printArea"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -238,7 +255,7 @@ const num=v=>{const x=parseFloat(String(v).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const MN=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const mlabel=m=>MN[+m.slice(5)-1]+" "+m.slice(0,4);
-let db,days=[],advs=[],emps=[],editAdv=null,editEmp=null,xm=[],ded=[],showLeft=false,bon=[],wk=[],month="";
+let db,days=[],advs=[],emps=[],editAdv=null,editEmp=null,xm=[],ded=[],showLeft=false,bon=[],wk=[],pay=[],PR=[],month="";
 const today=new Date().toISOString().slice(0,10);
 const inM=d=>d.date&&d.date.slice(0,7)===month;
 const tot=d=>num(d.cash)+num(d.visa);
@@ -246,9 +263,9 @@ const tot=d=>num(d.cash)+num(d.visa);
 async function startApp(){
  $("state").hidden=false;
  db=firebase.firestore();
- let got=0;const ready=()=>{if(++got===6){$("state").hidden=true;$("app").hidden=false}};
- const t=setTimeout(()=>{if(got<6){$("state").textContent="بعض البيانات اتأخرت في التحميل، لو الأرقام ناقصة حدّث الصفحة.";$("app").hidden=false}},10000);
- let a1=false,a2=false,a3=false,a4=false,a5=false,a6=false;db.collection("bonuses").onSnapshot(s=>{bon=s.docs.map(d=>({id:d.id,...d.data()}));if(!a5){a5=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الزيادات.");db.collection("work").onSnapshot(s=>{wk=s.docs.map(d=>({id:d.id,...d.data()}));if(!a6){a6=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة أيام الشغل.");db.collection("deductions").onSnapshot(s=>{ded=s.docs.map(d=>({id:d.id,...d.data()}));if(!a4){a4=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الخصومات.");db.collection("employees").onSnapshot(s=>{emps=s.docs.map(d=>({id:d.id,...d.data()}));if(!a3){a3=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الموظفين.");
+ let got=0;const ready=()=>{if(++got===7){$("state").hidden=true;$("app").hidden=false}};
+ const t=setTimeout(()=>{if(got<7){$("state").textContent="بعض البيانات اتأخرت في التحميل، لو الأرقام ناقصة حدّث الصفحة.";$("app").hidden=false}},10000);
+ let a1=false,a2=false,a3=false,a4=false,a5=false,a6=false,a7=false;db.collection("payments").onSnapshot(s=>{pay=s.docs.map(d=>({id:d.id,...d.data()}));if(!a7){a7=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة المدفوعات.");db.collection("bonuses").onSnapshot(s=>{bon=s.docs.map(d=>({id:d.id,...d.data()}));if(!a5){a5=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الزيادات.");db.collection("work").onSnapshot(s=>{wk=s.docs.map(d=>({id:d.id,...d.data()}));if(!a6){a6=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة أيام الشغل.");db.collection("deductions").onSnapshot(s=>{ded=s.docs.map(d=>({id:d.id,...d.data()}));if(!a4){a4=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الخصومات.");db.collection("employees").onSnapshot(s=>{emps=s.docs.map(d=>({id:d.id,...d.data()}));if(!a3){a3=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الموظفين.");
  db.collection("days").onSnapshot(s=>{days=s.docs.map(d=>({id:d.id,...d.data()}));if(!a1){a1=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الأيام.");
  db.collection("advances").onSnapshot(s=>{advs=s.docs.map(d=>({id:d.id,...d.data()}));if(!a2){a2=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة السلفيات.");
 }
@@ -287,11 +304,19 @@ function render(){
  const allM=[...new Set([...days.map(d=>d.date),...advs.map(a=>a.date)].filter(Boolean).map(x=>x.slice(0,7)))].sort().reverse();
  const Dd=ded.filter(x=>x.date?x.date.slice(0,7)===month:true),dby={};Dd.forEach(x=>dby[x.name]=(dby[x.name]||0)+num(x.amount));
  const Bb=bon.filter(x=>x.date?x.date.slice(0,7)===month:true),bby={};Bb.forEach(x=>bby[x.name]=(bby[x.name]||0)+num(x.amount));
- let ts=0,ta=0,tdd=0,tb=0,tn=0;
- $("prow").innerHTML=emps.filter(e=>!e.left||e.left>=month).slice().sort((a,b)=>a.name.localeCompare(b.name,"ar")).map(e=>{const s=num(e.salary),a=by[e.name]||0,d=dby[e.name]||0,b=bby[e.name]||0,w=wk.find(x=>x.empId===e.id&&x.month===month),base=w?Math.round(num(w.days)*s/30):s,net=base-a-d+b;ts+=base;ta+=a;tdd+=d;tb+=b;tn+=net;return `<tr><td>${esc(e.name)}</td><td><input class="q" inputmode="decimal" value="${s||""}" placeholder="المرتب" data-si="${e.id}" aria-label="مرتب ${esc(e.name)}"></td><td><input class="q" inputmode="decimal" value="${w?w.days:""}" placeholder="كل الشهر" data-wi="${e.id}" aria-label="أيام شغل ${esc(e.name)}"> <button class="lk" data-ss="${e.id}">حفظ</button></td><td class="n">${f(base)}</td><td class="n">${f(a)}</td><td class="n">${f(d)}</td><td class="n">${f(b)}</td><td class="n"><b>${f(net)}</b></td></tr>`}).join("")||'<tr><td colspan="8" class="msg">ضيف الموظفين الأول.</td></tr>';
- $("pfoot").innerHTML=emps.length?`<tr><td><b>الإجمالي</b></td><td></td><td></td><td class="n"><b>${f(ts)}</b></td><td class="n"><b>${f(ta)}</b></td><td class="n"><b>${f(tdd)}</b></td><td class="n"><b>${f(tb)}</b></td><td class="n"><b>${f(tn)}</b></td></tr>`:"";
+ let ts=0,ta=0,tdd=0,tb=0,tn=0,tpd=0;PR=[];
+ $("prow").innerHTML=emps.filter(e=>!e.left||e.left>=month).slice().sort((a,b)=>a.name.localeCompare(b.name,"ar")).map(e=>{const s=num(e.salary),a=by[e.name]||0,d=dby[e.name]||0,b=bby[e.name]||0,w=wk.find(x=>x.empId===e.id&&x.month===month),base=w?Math.round(num(w.days)*s/30):s,net=base-a-d+b,pd=pay.find(x=>x.empId===e.id&&x.month===month);ts+=base;ta+=a;tdd+=d;tb+=b;tn+=net;if(pd)tpd+=num(pd.amount);PR.push({e,s,base,a,d,b,net,pd,w});return `<tr><td>${esc(e.name)}</td><td><input class="q" inputmode="decimal" value="${s||""}" placeholder="المرتب" data-si="${e.id}" aria-label="مرتب ${esc(e.name)}"></td><td><input class="q" inputmode="decimal" value="${w?w.days:""}" placeholder="كل الشهر" data-wi="${e.id}" aria-label="أيام شغل ${esc(e.name)}"> <button class="lk" data-ss="${e.id}">حفظ</button></td><td class="n">${f(base)}</td><td class="n">${f(a)}</td><td class="n">${f(d)}</td><td class="n">${f(b)}</td><td class="n"><b>${f(net)}</b></td><td>${pd?`<span style="color:var(--sales)">✓ اتدفع ${pd.date||""}</span>${num(pd.amount)!==net?` <small class="msg">(وقت الدفع ${f(pd.amount)})</small>`:""} <button class="lk" data-pu="${e.id}">تراجع</button>`:`<button class="btn" data-pp="${e.id}" data-net="${net}">تم الدفع</button>`} <button class="lk" data-pr="${e.id}">كشف</button></td></tr>`}).join("")||'<tr><td colspan="9" class="msg">ضيف الموظفين الأول.</td></tr>';
+ $("pfoot").innerHTML=emps.length?`<tr><td><b>الإجمالي</b></td><td></td><td></td><td class="n"><b>${f(ts)}</b></td><td class="n"><b>${f(ta)}</b></td><td class="n"><b>${f(tdd)}</b></td><td class="n"><b>${f(tb)}</b></td><td class="n"><b>${f(tn)}</b></td><td>اتدفع ${f(tpd)} · فاضل ${f(tn-tpd)}</td></tr>`:"";
  $("brows").innerHTML=Bb.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note)}</td><td><button class="lk d" data-bx="${x.id}">حذف</button></td></tr>`).join("");
  $("drows").innerHTML=Dd.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note)}</td><td><button class="lk d" data-dx="${x.id}">حذف</button></td></tr>`).join("");
+ {const [y0,m0]=month.split("-").map(Number),dim=new Date(y0,m0,0).getDate(),tm=today.slice(0,7),last=month<tm?dim:month===tm?(+today.slice(8)-1):0,have=new Set(days.map(x=>x.date)),miss=[];
+ if(days.some(x=>x.date&&x.date.slice(0,7)===month))for(let i=1;i<=last;i++){const ds=month+"-"+String(i).padStart(2,"0");if(!have.has(ds))miss.push(ds)}
+ $("miss").hidden=!miss.length;$("miss").innerHTML=miss.length?"⚠ أيام ماتسجلتش ("+miss.length+"): "+miss.map(x=>`<button class="lk" data-mi="${x}">${+x.slice(8)}</button>`).join(" ")+' <small class="msg">دوس على اليوم عشان تسجله.</small>':""}
+ {let [py,pm0]=month.split("-").map(Number);pm0--;if(pm0===0){pm0=12;py--}const pm=py+"-"+String(pm0).padStart(2,"0");
+ const agg=mm=>{const dd=days.filter(x=>x.date&&x.date.slice(0,7)===mm),s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0);return{n:dd.length,s,e,net:s-e,avg:dd.length?s/dd.length:0,ea:dd.length?e/dd.length:0,adv:advs.filter(a=>a.date&&a.date.slice(0,7)===mm).reduce((x,a)=>x+num(a.amount),0)}};
+ const cu=agg(month),pr=agg(pm);
+ const row=(lab,cv,pv,goodUp)=>{const df=cv-pv,pc=pv?Math.round(df/pv*100):null,up=df>0,good=df===0?null:(up===goodUp);return `<tr><td>${lab}</td><td class="n">${f(cv)}</td><td class="n">${f(pv)}</td><td class="n" style="color:${good===null?"var(--muted)":good?"var(--sales)":"var(--bad)"}">${df===0?"—":(up?"▲ ":"▼ ")+f(Math.abs(df))+(pc===null?"":" ("+Math.abs(pc)+"%)")}</td></tr>`};
+ $("cmp").innerHTML=pr.n?`<table style="min-width:420px"><thead><tr><th></th><th class="n">${mlabel(month)}</th><th class="n">${mlabel(pm)}</th><th class="n">الفرق</th></tr></thead><tbody>${row("المبيعات",cu.s,pr.s,true)}${row("المصروفات",cu.e,pr.e,false)}${row("الصافي",cu.net,pr.net,true)}${row("متوسط المبيعات في اليوم",cu.avg,pr.avg,true)}${row("متوسط المصروفات في اليوم",cu.ea,pr.ea,false)}${row("السلفيات",cu.adv,pr.adv,false)}${row("الأيام المسجلة",cu.n,pr.n,true)}</tbody></table><p class="msg">عدد الأيام المسجلة مختلف بين الشهرين، فقارن بالمتوسط في اليوم.</p>`:'<p class="msg">مفيش بيانات للشهر اللي قبله للمقارنة.</p>'}
  $("mrows").innerHTML=allM.map(m=>{const dd=days.filter(d=>d.date&&d.date.slice(0,7)===m);const s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0),a=advs.filter(x=>x.date&&x.date.slice(0,7)===m).reduce((x,y)=>x+num(y.amount),0);return `<tr><td>${mlabel(m)}</td><td class="n">${f(s)}</td><td class="n">${f(e)}</td><td class="n">${f(s-e)}</td><td class="n">${f(a)}</td></tr>`}).join("");
 }
 
@@ -323,6 +348,10 @@ document.addEventListener("click",async e=>{
  if(!e||raw===""||(!v&&!isSet)){flash("eok","اكتب مبلغ السلفة الأول.")}else{const d=month===today.slice(0,7)?today:month+"-01";let amt=v,note="";if(isSet){amt=v-curTotal(e.name,month);note="تعديل التوتال لـ"+f(v)}if(amt===0){flash("eok","التوتال هو هو، مفيش تغيير.")}else{await db.collection("advances").add({name:e.name,amount:amt,date:d,note});flash("eok",isSet?"توتال "+e.name+" بقى "+f(v):"اتضافت سلفة "+f(v)+" لـ"+e.name)}}}
  if(t.dataset.el&&twice(t)){const e=emps.find(x=>x.id===t.dataset.el);if(e){const {id:_i,...r}=e;await db.collection("employees").doc(e.id).set({...r,left:month});flash("eok","اتحذف "+e.name+" من الموظفين. بياناته فضلت محفوظة في الشهور القديمة.")}}
  if(t.dataset.eb){const e=emps.find(x=>x.id===t.dataset.eb);if(e){const {id:_i,...r}=e;delete r.left;await db.collection("employees").doc(e.id).set(r);flash("eok","اترجّع "+e.name+" للقايمة.")}}
+ if(t.dataset.pp){const e=emps.find(x=>x.id===t.dataset.pp);if(e)await db.collection("payments").doc(e.id+"_"+month).set({empId:e.id,month,amount:num(t.dataset.net),date:today})}
+ if(t.dataset.pu&&twice(t))await db.collection("payments").doc(t.dataset.pu+"_"+month).delete();
+ if(t.dataset.pr)printSlip(t.dataset.pr);
+ if(t.dataset.mi){show("b");$("fd").value=t.dataset.mi;$("fc").focus()}
  if(t.dataset.ss){const e=emps.find(x=>x.id===t.dataset.ss),inp=document.querySelector('[data-si="'+t.dataset.ss+'"]');if(e&&inp){const wi=document.querySelector('[data-wi="'+e.id+'"]'),raw=wi?wi.value.trim():"",sal=num(inp.value),wid=e.id+"_"+month,had=wk.some(x=>x.id===wid);const {id:_i,...r}=e;await db.collection("employees").doc(e.id).set({...r,salary:sal});if(raw!=="")await db.collection("work").doc(wid).set({empId:e.id,month,days:num(raw)});else if(had)await db.collection("work").doc(wid).delete();flash("dok","اتحفظ مرتب "+e.name+(raw!==""?" وأيام الشغل":""))}}
  if(t.dataset.dx&&twice(t))await db.collection("deductions").doc(t.dataset.dx).delete();
  if(t.dataset.bx&&twice(t))await db.collection("bonuses").doc(t.dataset.bx).delete();
@@ -362,6 +391,13 @@ $("bk").onclick=async()=>{
  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
  const bl=new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),u=URL.createObjectURL(bl),a=document.createElement("a");a.href=u;a.download="coya-backup-"+today+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);
 };
+function doPrint(html){const a=$("printArea");a.innerHTML=html;document.body.classList.add("printing");const done=()=>{a.innerHTML="";document.body.classList.remove("printing");window.removeEventListener("afterprint",done)};window.addEventListener("afterprint",done);setTimeout(()=>window.print(),80)}
+function printSlip(id){const r=PR.find(x=>x.e.id===id);if(!r)return;const e=r.e,mo=x=>x.date?x.date.slice(0,7)===month:true,A=advs.filter(a=>a.name===e.name&&mo(a)),Dx=ded.filter(a=>a.name===e.name&&mo(a)),Bx=bon.filter(a=>a.name===e.name&&mo(a));
+ const list=arr=>arr.length?`<table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${x.date||""}</td><td>${f(x.amount)}</td><td>${esc(x.note||(x.days?(DL[x.days]||x.days):""))}</td></tr>`).join("")}</tbody></table>`:"<p>—</p>";
+ doPrint(`<h1>coya café – كشف مرتب</h1><p>الموظف: <b>${esc(e.name)}</b> &nbsp; الشهر: <b>${mlabel(month)}</b></p><table><tr><th>المرتب الشهري</th><td>${f(r.s)}</td><th>أيام الشغل</th><td>${r.w?r.w.days:"كل الشهر"}</td></tr><tr><th>المرتب المستحق</th><td>${f(r.base)}</td><th>الصافي</th><td><b>${f(r.net)}</b></td></tr></table><h2>السلف</h2>${list(A)}<h2>الخصومات</h2>${list(Dx)}<h2>الزيادات</h2>${list(Bx)}<p>حالة الدفع: <b>${r.pd?"اتدفع "+(r.pd.date||""):"لم يُدفع بعد"}</b></p><div class="sig"><span>توقيع الموظف: ..................</span><span>توقيع المسؤول: ..................</span></div>`)}
+function monthReport(){const D=days.filter(inM).sort((a,b)=>a.date<b.date?-1:1),S=D.reduce((x,d)=>x+tot(d),0),E=D.reduce((x,d)=>x+num(d.exp),0);
+ doPrint(`<h1>coya café – كشف شهر ${mlabel(month)}</h1><p>تاريخ الطباعة: ${today}</p><h2>الملخص</h2><table><tr><th>إجمالي المبيعات</th><td>${f(S)}</td><th>المصروفات</th><td>${f(E)}</td><th>الصافي</th><td>${f(S-E)}</td></tr></table><h2>المرتبات</h2><table><thead><tr><th>الموظف</th><th>المرتب</th><th>المستحق</th><th>السلف</th><th>الخصومات</th><th>الزيادات</th><th>الصافي</th><th>الدفع</th></tr></thead><tbody>${PR.map(r=>`<tr><td>${esc(r.e.name)}</td><td>${f(r.s)}</td><td>${f(r.base)}</td><td>${f(r.a)}</td><td>${f(r.d)}</td><td>${f(r.b)}</td><td><b>${f(r.net)}</b></td><td>${r.pd?"اتدفع":"لسه"}</td></tr>`).join("")}</tbody></table><h2>اليومية</h2><table><thead><tr><th>التاريخ</th><th>كاش</th><th>فيزا</th><th>مصروفات</th><th>الصافي</th><th>ملاحظات</th></tr></thead><tbody>${D.map(d=>`<tr><td>${d.date}</td><td>${f(d.cash)}</td><td>${f(d.visa)}</td><td>${f(d.exp)}</td><td>${f(tot(d)-num(d.exp))}</td><td>${esc(d.note)}</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th colspan="2">${f(S)}</th><th>${f(E)}</th><th>${f(S-E)}</th><th></th></tr></tfoot></table>`)}
+$("prm").onclick=monthReport;
 $("mnew").onchange=e=>{const v=e.target.value;if(v){xm.push(v);month=v;render()}e.target.value=""};
 
 function show(id){document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.t===id));document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!==id)}
