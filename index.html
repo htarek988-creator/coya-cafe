@@ -240,6 +240,7 @@ body.printing #printArea{display:block!important;color:#000;background:#fff;dire
 <div class="box tw"><h2>سجل الزيادات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody id="brows"></tbody></table></div>
 </section>
 </div>
+</main>
 
 <div id="printArea"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -258,6 +259,7 @@ const mlabel=m=>MN[+m.slice(5)-1]+" "+m.slice(0,4);
 let db,days=[],advs=[],emps=[],editAdv=null,editEmp=null,xm=[],ded=[],showLeft=false,bon=[],wk=[],pay=[],PR=[],month="";
 const today=new Date().toISOString().slice(0,10);
 const inM=d=>d.date&&d.date.slice(0,7)===month;
+const inMonth=(x,m)=>x.date?x.date.slice(0,7)===m:true;
 const tot=d=>num(d.cash)+num(d.visa);
 
 async function startApp(){
@@ -276,7 +278,7 @@ function render(){
  if(!month||!ms.includes(month))month=ms[0];
  $("month").innerHTML=ms.map(m=>`<option value="${m}" ${m===month?"selected":""}>${mlabel(m)}</option>`).join("");
  const D=days.filter(inM).sort((a,b)=>a.date<b.date?-1:1);
- const A=advs.filter(a=>a.date?a.date.slice(0,7)===month:true);
+ const A=advs.filter(a=>inMonth(a,month));
  const S=D.reduce((x,d)=>x+tot(d),0),E=D.reduce((x,d)=>x+num(d.exp),0),AD=A.reduce((x,a)=>x+num(a.amount),0),V=D.reduce((x,d)=>x+num(d.visa),0);
  const N=S-E,p=x=>S?(x/S*100).toFixed(1)+"%":"0%";
  const best=D.length?D.reduce((b,d)=>tot(d)>tot(b)?d:b):null;
@@ -313,15 +315,15 @@ function render(){
  if(days.some(x=>x.date&&x.date.slice(0,7)===month))for(let i=1;i<=last;i++){const ds=month+"-"+String(i).padStart(2,"0");if(!have.has(ds))miss.push(ds)}
  $("miss").hidden=!miss.length;$("miss").innerHTML=miss.length?"⚠ أيام ماتسجلتش ("+miss.length+"): "+miss.map(x=>`<button class="lk" data-mi="${x}">${+x.slice(8)}</button>`).join(" ")+' <small class="msg">دوس على اليوم عشان تسجله.</small>':""}
  {let [py,pm0]=month.split("-").map(Number);pm0--;if(pm0===0){pm0=12;py--}const pm=py+"-"+String(pm0).padStart(2,"0");
- const agg=mm=>{const dd=days.filter(x=>x.date&&x.date.slice(0,7)===mm),s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0);return{n:dd.length,s,e,net:s-e,avg:dd.length?s/dd.length:0,ea:dd.length?e/dd.length:0,adv:advs.filter(a=>a.date&&a.date.slice(0,7)===mm).reduce((x,a)=>x+num(a.amount),0)}};
+ const agg=mm=>{const dd=days.filter(x=>x.date&&x.date.slice(0,7)===mm),s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0);return{n:dd.length,s,e,net:s-e,avg:dd.length?s/dd.length:0,ea:dd.length?e/dd.length:0,adv:advs.filter(a=>inMonth(a,mm)).reduce((x,a)=>x+num(a.amount),0)}};
  const cu=agg(month),pr=agg(pm);
  const row=(lab,cv,pv,goodUp)=>{const df=cv-pv,pc=pv?Math.round(df/pv*100):null,up=df>0,good=df===0?null:(up===goodUp);return `<tr><td>${lab}</td><td class="n">${f(cv)}</td><td class="n">${f(pv)}</td><td class="n" style="color:${good===null?"var(--muted)":good?"var(--sales)":"var(--bad)"}">${df===0?"—":(up?"▲ ":"▼ ")+f(Math.abs(df))+(pc===null?"":" ("+Math.abs(pc)+"%)")}</td></tr>`};
  $("cmp").innerHTML=pr.n?`<table style="min-width:420px"><thead><tr><th></th><th class="n">${mlabel(month)}</th><th class="n">${mlabel(pm)}</th><th class="n">الفرق</th></tr></thead><tbody>${row("المبيعات",cu.s,pr.s,true)}${row("المصروفات",cu.e,pr.e,false)}${row("الصافي",cu.net,pr.net,true)}${row("متوسط المبيعات في اليوم",cu.avg,pr.avg,true)}${row("متوسط المصروفات في اليوم",cu.ea,pr.ea,false)}${row("السلفيات",cu.adv,pr.adv,false)}${row("الأيام المسجلة",cu.n,pr.n,true)}</tbody></table><p class="msg">عدد الأيام المسجلة مختلف بين الشهرين، فقارن بالمتوسط في اليوم.</p>`:'<p class="msg">مفيش بيانات للشهر اللي قبله للمقارنة.</p>'}
- $("mrows").innerHTML=allM.map(m=>{const dd=days.filter(d=>d.date&&d.date.slice(0,7)===m);const s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0),a=advs.filter(x=>x.date&&x.date.slice(0,7)===m).reduce((x,y)=>x+num(y.amount),0);return `<tr><td>${mlabel(m)}</td><td class="n">${f(s)}</td><td class="n">${f(e)}</td><td class="n">${f(s-e)}</td><td class="n">${f(a)}</td></tr>`}).join("");
+ $("mrows").innerHTML=allM.map(m=>{const dd=days.filter(d=>d.date&&d.date.slice(0,7)===m);const s=dd.reduce((x,d)=>x+tot(d),0),e=dd.reduce((x,d)=>x+num(d.exp),0),a=advs.filter(x=>inMonth(x,m)).reduce((x,y)=>x+num(y.amount),0);return `<tr><td>${mlabel(m)}</td><td class="n">${f(s)}</td><td class="n">${f(e)}</td><td class="n">${f(s-e)}</td><td class="n">${f(a)}</td></tr>`}).join("");
 }
 
 function twice(t){if(t.dataset.sure)return true;t.dataset.sure=1;const o=t.textContent;t.textContent="تأكيد؟";setTimeout(()=>{delete t.dataset.sure;t.textContent=o},3000);return false}
-const curTotal=(n,m)=>advs.filter(a=>a.name===n&&a.date&&a.date.slice(0,7)===m).reduce((x,a)=>x+num(a.amount),0);
+const curTotal=(n,m)=>advs.filter(a=>a.name===n&&inMonth(a,m)).reduce((x,a)=>x+num(a.amount),0);
 function apv(){const n=$("an").value.trim(),v=$("aa").value.trim(),m=($("ad").value||today).slice(0,7);if(!n||v===""||editAdv){$("apv").textContent="";return}const c=curTotal(n,m),x=num(v);$("apv").textContent=n+" في "+mlabel(m)+": الحالي "+f(c)+" ← بعد الحفظ "+f($("am").value==="set"?x:c+x)+" ج.م"}
 ["an","aa","ad","am"].forEach(i=>{$(i).oninput=apv;$(i).onchange=apv});
 function flash(id,t){$(id).textContent=t;setTimeout(()=>$(id).textContent="",3000)}
@@ -348,7 +350,7 @@ document.addEventListener("click",async e=>{
  if(!e||raw===""||(!v&&!isSet)){flash("eok","اكتب مبلغ السلفة الأول.")}else{const d=month===today.slice(0,7)?today:month+"-01";let amt=v,note="";if(isSet){amt=v-curTotal(e.name,month);note="تعديل التوتال لـ"+f(v)}if(amt===0){flash("eok","التوتال هو هو، مفيش تغيير.")}else{await db.collection("advances").add({name:e.name,amount:amt,date:d,note});flash("eok",isSet?"توتال "+e.name+" بقى "+f(v):"اتضافت سلفة "+f(v)+" لـ"+e.name)}}}
  if(t.dataset.el&&twice(t)){const e=emps.find(x=>x.id===t.dataset.el);if(e){const {id:_i,...r}=e;await db.collection("employees").doc(e.id).set({...r,left:month});flash("eok","اتحذف "+e.name+" من الموظفين. بياناته فضلت محفوظة في الشهور القديمة.")}}
  if(t.dataset.eb){const e=emps.find(x=>x.id===t.dataset.eb);if(e){const {id:_i,...r}=e;delete r.left;await db.collection("employees").doc(e.id).set(r);flash("eok","اترجّع "+e.name+" للقايمة.")}}
- if(t.dataset.pp){const e=emps.find(x=>x.id===t.dataset.pp);if(e)await db.collection("payments").doc(e.id+"_"+month).set({empId:e.id,month,amount:num(t.dataset.net),date:today})}
+ if(t.dataset.pp&&twice(t)){const e=emps.find(x=>x.id===t.dataset.pp);if(e)await db.collection("payments").doc(e.id+"_"+month).set({empId:e.id,month,amount:num(t.dataset.net),date:today})}
  if(t.dataset.pu&&twice(t))await db.collection("payments").doc(t.dataset.pu+"_"+month).delete();
  if(t.dataset.pr)printSlip(t.dataset.pr);
  if(t.dataset.mi){show("b");$("fd").value=t.dataset.mi;$("fc").focus()}
@@ -377,7 +379,7 @@ $("showl").onchange=e=>{showLeft=e.target.checked;render()};
 $("ecl").onclick=()=>{editEmp=null;$("en").value="";$("eadd").textContent="إضافة موظف"};
 $("eadd").onclick=async()=>{const name=$("en").value.trim();if(!name){flash("eok","اكتب اسم الموظف.");return}
  if(emps.some(e=>e.name===name&&e.id!==editEmp)){flash("eok","الموظف ده موجود قبل كده.");return}
- try{if(editEmp){const e=emps.find(x=>x.id===editEmp);for(const a of advs.filter(x=>x.name===e.name)){const {id,...r}=a;await db.collection("advances").doc(id).set({...r,name})}for(const x of ded.filter(z=>z.name===e.name)){const {id:i2,...r3}=x;await db.collection("deductions").doc(i2).set({...r3,name})}{const {id:_i,...r2}=e;await db.collection("employees").doc(editEmp).set({...r2,name})}editEmp=null;$("eadd").textContent="إضافة موظف"}else await db.collection("employees").add({name,salary:num($("es").value)});$("en").value="";$("es").value="";flash("eok","اتحفظ.")}catch(err){flash("eok","الحفظ فشل: ممكن صلاحيتك للعرض بس.")}};
+ try{if(editEmp){const e=emps.find(x=>x.id===editEmp);for(const a of advs.filter(x=>x.name===e.name)){const {id,...r}=a;await db.collection("advances").doc(id).set({...r,name})}for(const x of ded.filter(z=>z.name===e.name)){const {id:i2,...r3}=x;await db.collection("deductions").doc(i2).set({...r3,name})}for(const x of bon.filter(z=>z.name===e.name)){const {id:i3,...r4}=x;await db.collection("bonuses").doc(i3).set({...r4,name})}{const {id:_i,...r2}=e;await db.collection("employees").doc(editEmp).set({...r2,name})}editEmp=null;$("eadd").textContent="إضافة موظف"}else await db.collection("employees").add({name,salary:num($("es").value)});$("en").value="";$("es").value="";flash("eok","اتحفظ.")}catch(err){flash("eok","الحفظ فشل: ممكن صلاحيتك للعرض بس.")}};
 $("month").onchange=e=>{month=e.target.value;render()};
 $("bk").onclick=async()=>{
  if(typeof XLSX==="undefined"){alert("مكتبة Excel ماتحمّلتش. اتأكد من الإنترنت.");return}
