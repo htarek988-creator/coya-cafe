@@ -125,6 +125,23 @@ input:hover,select:hover,input:focus,select:focus{box-shadow:0 0 0 2px rgba(46,2
 tbody tr:hover{filter:none}
 .adv:hover{box-shadow:0 8px 22px rgba(255,92,170,.2)}
 .note{background:#10382D;color:#fff}
+
+/* ---- Glass look ---- */
+body{background:#000;position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+radial-gradient(900px 620px at 85% 0%,rgba(30,170,130,.34),transparent 68%),
+radial-gradient(800px 600px at 10% 100%,rgba(30,170,130,.24),transparent 68%)}
+.box,.kpi,.note,#login{background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05));-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 34px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.18)}
+.kpi{border-inline-start:5px solid var(--c)}
+input,select{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+option{background:#101214;color:#fff}
+th{background:transparent;color:#D5DDE0}
+th,td{border-bottom-color:rgba(255,255,255,.10)}
+.btn.g{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.btn:not(.g){box-shadow:0 6px 20px rgba(46,230,166,.35),inset 0 1px 0 rgba(255,255,255,.35)}
+.tabs{border-bottom-color:rgba(255,255,255,.14)}
+.adv .track{background:rgba(255,255,255,.10)}
+.kpi:hover,.box:hover,.adv:hover{border-color:rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
