@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>coya café – سيستم الحسابات</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D0F10">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="coya">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#EEF2EF;--surface:#FFFFFF;--ink:#17262B;--muted:#5C6B6F;--line:#D5DDD9;--sales:#1F6F5C;--exp:#D08A1E;--adv:#8A3F68;--hi:#E3F0EA;--bad:#B3261E;
@@ -164,7 +171,7 @@ body.locked [data-x],body.locked [data-ax],body.locked [data-ae],body.locked [da
 </head>
 <body>
 <main>
-<div class="top"><h1>coya café – الحسابات</h1><button class="btn g" id="bk">نسخة احتياطية (Excel)</button><button class="btn g" id="imp">استيراد بيانات</button><input type="file" id="impf" accept=".json" hidden><button class="btn g" id="lout" hidden>خروج</button><div style="min-width:200px;display:flex;gap:6px"><select id="month" aria-label="الشهر"></select><input type="month" id="mnew" aria-label="شهر آخر" title="افتح شهر آخر" style="width:auto"></div></div>
+<div class="top"><h1>coya café – الحسابات</h1><button class="btn g" id="bk">نسخة احتياطية (Excel)</button><button class="btn g" id="imp">استيراد بيانات</button><input type="file" id="impf" accept=".json" hidden><button class="btn g" id="lout" hidden>خروج</button><button class="btn g" id="pwa" hidden>تثبيت التطبيق</button><div style="min-width:200px;display:flex;gap:6px"><select id="month" aria-label="الشهر"></select><input type="month" id="mnew" aria-label="شهر آخر" title="افتح شهر آخر" style="width:auto"></div></div>
 <div id="login" class="box" style="max-width:380px;margin:40px auto" hidden><h2>تسجيل الدخول</h2>
 <label for="lem">الإيميل</label><input id="lem" type="email" autocomplete="username"><label for="lpw" style="margin-top:8px">الباسورد</label><input id="lpw" type="password" autocomplete="current-password">
 <p style="margin:12px 0 0"><button class="btn" id="lgo">دخول</button></p><div class="ok" id="lerr" style="color:var(--bad)"></div>
@@ -183,6 +190,7 @@ body.locked [data-x],body.locked [data-ax],body.locked [data-ae],body.locked [da
 <button role="tab" aria-selected="false" data-t="g">العهدة</button>
 </div>
 <div id="viewbar" class="note" hidden style="margin-bottom:14px">👁 صلاحيتك <b>عرض فقط</b> — تقدر تشوف كل الأرقام والكشوف، ومش هتقدر تعدّل أو تحذف أي حاجة.</div>
+<div id="netbar" class="note" hidden style="margin-bottom:14px">⚠ مفيش إنترنت — كل اللي بتسجله بيتحفظ على الجهاز وهيرفع لوحده أول ما النت يرجع.</div>
 <div id="lockbar" class="note" hidden style="margin-bottom:14px"></div>
 
 <section class="panel" id="a">
@@ -208,6 +216,10 @@ body.locked [data-x],body.locked [data-ax],body.locked [data-ae],body.locked [da
 </div><div class="ok" id="rok"></div>
 <div class="tw" style="margin-top:10px"><table><thead><tr><th>UID</th><th>الصلاحية</th><th></th></tr></thead><tbody id="rlist"></tbody></table></div>
 <p class="msg">مهم: القفل والصلاحيات في الواجهة بيمنعوا الغلط بالشغل العادي. للحماية الكاملة لازم تحدّث قواعد Firestore — الخطوات في ملف <b>firestore.rules</b>.</p>
+</details>
+<details class="box"><summary style="cursor:pointer;font-weight:700">سجل التعديلات (آخر ١٠٠ عملية)</summary>
+<p class="msg" style="margin:8px 0">كل حفظ أو حذف بيتسجل هنا: مين عمله وامتى وبأي أرقام. مفيد لو أكتر من واحد بيدخل على السيستم.</p>
+<div class="tw"><table><thead><tr><th>الوقت</th><th>المستخدم</th><th>العملية</th><th>التفاصيل</th></tr></thead><tbody id="alist"></tbody></table></div>
 </details>
 </section>
 
@@ -258,7 +270,7 @@ body.locked [data-x],body.locked [data-ax],body.locked [data-ae],body.locked [da
 <div><label for="dd">عدد الأيام</label><select id="dd"><option value="">اختار...</option><option value="0.25">ربع يوم</option><option value="0.5">نص يوم</option><option value="0.75">3 أرباع يوم</option><option value="1">يوم</option><option value="1.25">يوم وربع</option><option value="1.5">يوم ونص</option><option value="2">يومين</option><option value="2.5">يومين ونص</option><option value="3">3 أيام</option><option value="4">4 أيام</option><option value="5">5 أيام</option></select></div>
 <div><label for="da">أو مبلغ ثابت</label><input id="da" inputmode="decimal" placeholder="اختياري"></div>
 <div><label for="dt">التاريخ</label><input type="date" id="dt"></div>
-<div><label for="dnote">ملاحظة</label><input id="dnote"></div>
+<div><label for="dnote">السبب (مطلوب)</label><input id="dnote" placeholder="مثلاً: تأخير / غياب / خطأ في الطلب"></div>
 <div><button class="btn" id="dsave">حفظ الخصم</button></div></div>
 <div class="msg" id="dpv"></div><div class="ok" id="dok"></div></div>
 <div class="box"><h2>تسجيل زيادة</h2><div class="form">
@@ -266,12 +278,12 @@ body.locked [data-x],body.locked [data-ax],body.locked [data-ae],body.locked [da
 <div><label for="bd">زيادة أيام</label><select id="bd"><option value="">اختار...</option><option value="0.25">ربع يوم</option><option value="0.5">نص يوم</option><option value="0.75">3 أرباع يوم</option><option value="1">يوم</option><option value="1.25">يوم وربع</option><option value="1.5">يوم ونص</option><option value="2">يومين</option><option value="2.5">يومين ونص</option><option value="3">3 أيام</option><option value="4">4 أيام</option><option value="5">5 أيام</option></select></div>
 <div><label for="ba">أو مبلغ ثابت (زيادة/حافز)</label><input id="ba" inputmode="decimal" placeholder="اختياري"></div>
 <div><label for="bt">التاريخ</label><input type="date" id="bt"></div>
-<div><label for="bnote">ملاحظة</label><input id="bnote"></div>
+<div><label for="bnote">السبب (مطلوب)</label><input id="bnote" placeholder="مثلاً: مكافأة / شغل إضافي"></div>
 <div><button class="btn" id="bsave">حفظ الزيادة</button></div></div>
 <div class="msg" id="bpv"></div><div class="ok" id="bok"></div></div>
 <div class="box tw"><h2>مرتبات الشهر</h2><table><thead><tr><th>الموظف</th><th>المرتب الشهري</th><th>أيام الشغل (اختياري)</th><th class="n">المرتب المستحق</th><th class="n">السلف</th><th class="n">الخصومات</th><th class="n">الزيادات</th><th class="n">الصافي</th><th>الدفع</th></tr></thead><tbody id="prow"></tbody><tfoot id="pfoot"></tfoot></table><p class="msg">المرتب المستحق = المرتب الشهري، أو (أيام الشغل × قيمة اليوم) لو كتبت أيام الشغل. الصافي = المستحق − السلف − الخصومات + الزيادات. قيمة اليوم = المرتب ÷ 30. لو كتبت أيام الشغل متسجلش خصم أيام تاني عشان ميتحسبش مرتين.</p></div>
-<div class="box tw"><h2>سجل الخصومات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody id="drows"></tbody></table></div>
-<div class="box tw"><h2>سجل الزيادات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody id="brows"></tbody></table></div>
+<div class="box tw"><h2>سجل الخصومات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>السبب</th><th></th></tr></thead><tbody id="drows"></tbody></table></div>
+<div class="box tw"><h2>سجل الزيادات</h2><table><thead><tr><th>التاريخ</th><th>الموظف</th><th class="n">الأيام</th><th class="n">المبلغ</th><th>السبب</th><th></th></tr></thead><tbody id="brows"></tbody></table></div>
 </section>
 
 <section class="panel" id="g" hidden>
@@ -308,7 +320,7 @@ const num=v=>{const x=parseFloat(String(v).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const MN=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const mlabel=m=>MN[+m.slice(5)-1]+" "+m.slice(0,4);
-let db,days=[],advs=[],emps=[],editAdv=null,editEmp=null,xm=[],ded=[],showLeft=false,bon=[],wk=[],pay=[],cap=[],locks=[],roles=[],UID=null,VIEWER=false,PR=[],month="";
+let db,days=[],advs=[],emps=[],editAdv=null,editEmp=null,xm=[],ded=[],showLeft=false,bon=[],wk=[],pay=[],cap=[],locks=[],roles=[],logs=[],UID=null,VIEWER=false,PR=[],month="";
 const CATS=["بضاعة","مرتبات","إيجار","كهربا ومياه","صيانة","تسويق","سلف","أخرى"];
 const today=new Date().toISOString().slice(0,10);
 const inM=d=>d.date&&d.date.slice(0,7)===month;
@@ -317,14 +329,57 @@ const tot=d=>num(d.cash)+num(d.visa);
 const isLocked=m=>locks.some(x=>x.id===m&&x.locked!==false);
 const expItems=D=>{const o=[];D.forEach(d=>(d.exps||[]).forEach(x=>o.push({date:d.date,c:x.c||"أخرى",a:num(x.a),n:x.n||""})));return o};
 const catSum=D=>{const m={};let s=0;expItems(D).forEach(x=>{m[x.c]=(m[x.c]||0)+x.a;s+=x.a});return{m,s}};
+const AUD={days:()=>days,advances:()=>advs,employees:()=>emps,deductions:()=>ded,bonuses:()=>bon,work:()=>wk,payments:()=>pay,custody:()=>cap,locks:()=>locks,roles:()=>roles};
+const AUDN={days:"يوم",advances:"سلفة",employees:"موظف",deductions:"خصم",bonuses:"زيادة",work:"أيام شغل",payments:"دفعة مرتب",custody:"عهدة",locks:"قفل شهر",roles:"صلاحية",audit:"سجل",import:"بيانات"};
+function audDesc(col,d){
+ d=d||{};
+ const S=v=>esc(String(v??""));
+ if(col==="days")return (d.date||"")+" · مبيعات "+f(num(d.cash)+num(d.visa))+" · مصروفات "+f(num(d.exp))+((d.exps&&d.exps.length)?" · "+d.exps.length+" بند":"");
+ if(col==="advances")return S(d.name)+" · "+f(num(d.amount))+" ج.م"+(d.note?" · "+S(d.note):"");
+ if(col==="employees")return S(d.name)+(d.salary?" · مرتب "+f(num(d.salary)):"")+(d.left?" · مشي من "+d.left:"");
+ if(col==="deductions"||col==="bonuses")return S(d.name)+" · "+f(num(d.amount))+" ج.م"+(d.date?" · "+d.date:"")+(d.note?" · "+S(d.note):"");
+ if(col==="work")return "أيام شغل "+num(d.days)+" لشهر "+(d.month||"");
+ if(col==="payments")return "مرتب شهر "+(d.month||"")+" · "+f(num(d.amount));
+ if(col==="custody")return (d.kind==="open"?"عهدة شهر ":"صرف من العهدة ")+(d.month||"")+" · "+f(num(d.amount))+(d.note?" · "+S(d.note):"");
+ if(col==="locks")return "شهر "+(d.month||"");
+ if(col==="roles")return d.role==="viewer"?"عرض فقط":"تعديل كامل";
+ try{return S(JSON.stringify(d)).slice(0,120)}catch(e){return ""}
+}
+function audMonth(col,d,id){const s=String((d&&(d.date||d.month))||id||"");const m=s.match(/^(\d{4}-\d{2})/);return m?m[1]:""}
+function logWrite(col,op,id,data){
+ if(col==="audit"||typeof db==="undefined")return;
+ try{
+  const rec=(AUD[col]?AUD[col]():[]).find(x=>x.id===id),src=data||rec||{};
+  db.collection("audit").add({at:new Date().toISOString(),uid:UID||"",email:(firebase.auth().currentUser||{}).email||"",col,op,id,month:audMonth(col,src,id),desc:audDesc(col,src)}).catch(()=>{});
+ }catch(e){}
+}
+function wrapDB(){
+ if(db.__w)return;db.__w=1;
+ const oc=db.collection.bind(db);
+ db.collection=(name)=>{
+  const c=oc(name),od=c.doc.bind(c),oa=c.add.bind(c);
+  c.doc=(id)=>{
+   const d=od(id),os=d.set.bind(d),odel=d.delete.bind(d),oup=d.update.bind(d);
+   d.set=(data,o)=>os(data,o).then(r=>{logWrite(name,"حفظ",id,data);return r});
+   d.update=(data)=>oup(data).then(r=>{logWrite(name,"تعديل",id,data);return r});
+   d.delete=()=>{const rec=(AUD[name]?AUD[name]():[]).find(x=>x.id===id);return odel().then(r=>{logWrite(name,"حذف",id,rec);return r})};
+   return d;
+  };
+  c.add=(data)=>{if(name==="audit")return oa(data);return oa(data).then(r=>{logWrite(name,"إضافة",r.id,data);return r})};
+  return c;
+ };
+}
 function noWrite(m,el){const t=m?"شهر "+mlabel(m)+" مقفول. افتحه من تاب \"نظرة عامة\" الأول.":"صلاحيتك للعرض بس — مفيش تعديل.";const msg=VIEWER?"صلاحيتك للعرض بس — مفيش تعديل.":t;if(VIEWER||(m&&isLocked(m))){if(el)flash(el,msg);else alert(msg);return true}return false}
 
 async function startApp(){
  $("state").hidden=false;
  db=firebase.firestore();
- let got=0;const ready=()=>{if(++got===10){$("state").hidden=true;$("app").hidden=false}};
- const t=setTimeout(()=>{if(got<10){$("state").textContent="بعض البيانات اتأخرت في التحميل، لو الأرقام ناقصة حدّث الصفحة.";$("app").hidden=false}},10000);
- let a1=false,a2=false,a3=false,a4=false,a5=false,a6=false,a7=false,a8=false,a9=false,a10=false;
+ try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
+ wrapDB();
+ let got=0;const ready=()=>{if(++got===11){$("state").hidden=true;$("app").hidden=false}};
+ const t=setTimeout(()=>{if(got<11){$("state").textContent="بعض البيانات اتأخرت في التحميل، لو الأرقام ناقصة حدّث الصفحة.";$("app").hidden=false}},10000);
+ let a1=false,a2=false,a3=false,a4=false,a5=false,a6=false,a7=false,a8=false,a9=false,a10=false,a11=false;
+ db.collection("audit").orderBy("at","desc").limit(100).onSnapshot(s=>{logs=s.docs.map(d=>({id:d.id,...d.data()}));if(!a11){a11=true;ready()}render()},e=>{if(!a11){a11=true;ready()}});
  db.collection("locks").onSnapshot(s=>{locks=s.docs.map(d=>({id:d.id,...d.data()}));if(!a9){a9=true;ready()}render()},e=>{if(!a9){a9=true;ready()}});
  db.collection("roles").onSnapshot(s=>{roles=s.docs.map(d=>({id:d.id,...d.data()}));if(!a10){a10=true;ready()}render()},e=>{if(!a10){a10=true;ready()}});
  db.collection("payments").onSnapshot(s=>{pay=s.docs.map(d=>({id:d.id,...d.data()}));if(!a7){a7=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة المدفوعات.");db.collection("custody").onSnapshot(s=>{cap=s.docs.map(d=>({id:d.id,...d.data()}));if(!a8){a8=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة العهدة.");db.collection("bonuses").onSnapshot(s=>{bon=s.docs.map(d=>({id:d.id,...d.data()}));if(!a5){a5=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الزيادات.");db.collection("work").onSnapshot(s=>{wk=s.docs.map(d=>({id:d.id,...d.data()}));if(!a6){a6=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة أيام الشغل.");db.collection("deductions").onSnapshot(s=>{ded=s.docs.map(d=>({id:d.id,...d.data()}));if(!a4){a4=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الخصومات.");db.collection("employees").onSnapshot(s=>{emps=s.docs.map(d=>({id:d.id,...d.data()}));if(!a3){a3=true;ready()}render()},e=>$("state").textContent="مشكلة في قراءة الموظفين.");
@@ -374,11 +429,11 @@ function render(){
  const allM=[...new Set([...days.map(d=>d.date),...advs.map(a=>a.date)].filter(Boolean).map(x=>x.slice(0,7)))].sort().reverse();
  const Dd=ded.filter(x=>x.date?x.date.slice(0,7)===month:true),dby={};Dd.forEach(x=>dby[x.name]=(dby[x.name]||0)+num(x.amount));
  const Bb=bon.filter(x=>x.date?x.date.slice(0,7)===month:true),bby={};Bb.forEach(x=>bby[x.name]=(bby[x.name]||0)+num(x.amount));
- let ts=0,ta=0,tdd=0,tb=0,tn=0,tpd=0;PR=[];
- $("prow").innerHTML=emps.filter(e=>!e.left||e.left>=month).slice().sort((a,b)=>a.name.localeCompare(b.name,"ar")).map(e=>{const s=num(e.salary),a=by[e.name]||0,d=dby[e.name]||0,b=bby[e.name]||0,w=wk.find(x=>x.empId===e.id&&x.month===month),base=w?Math.round(num(w.days)*s/30):s,net=base-a-d+b,pd=pay.find(x=>x.empId===e.id&&x.month===month);ts+=base;ta+=a;tdd+=d;tb+=b;tn+=net;if(pd)tpd+=num(pd.amount);PR.push({e,s,base,a,d,b,net,pd,w});return `<tr><td>${esc(e.name)}</td><td><input class="q" inputmode="decimal" value="${s||""}" placeholder="المرتب" data-si="${e.id}" aria-label="مرتب ${esc(e.name)}"></td><td><input class="q" inputmode="decimal" value="${w?w.days:""}" placeholder="كل الشهر" data-wi="${e.id}" aria-label="أيام شغل ${esc(e.name)}"> <button class="lk" data-ss="${e.id}">حفظ</button></td><td class="n">${f(base)}</td><td class="n">${f(a)}</td><td class="n">${f(d)}</td><td class="n">${f(b)}</td><td class="n"><b>${f(net)}</b></td><td>${pd?`<span style="color:var(--sales)">✓ اتدفع ${pd.date||""}</span>${num(pd.amount)!==net?` <small class="msg">(وقت الدفع ${f(pd.amount)})</small>`:""} <button class="lk" data-pu="${e.id}">تراجع</button>`:`<button class="btn" data-pp="${e.id}" data-net="${net}">تم الدفع</button>`} <button class="lk" data-pr="${e.id}">كشف</button></td></tr>`}).join("")||'<tr><td colspan="9" class="msg">ضيف الموظفين الأول.</td></tr>';
- $("pfoot").innerHTML=emps.length?`<tr><td><b>الإجمالي</b></td><td></td><td></td><td class="n"><b>${f(ts)}</b></td><td class="n"><b>${f(ta)}</b></td><td class="n"><b>${f(tdd)}</b></td><td class="n"><b>${f(tb)}</b></td><td class="n"><b>${f(tn)}</b></td><td>اتدفع ${f(tpd)} · فاضل ${f(tn-tpd)}</td></tr>`:"";
- $("brows").innerHTML=Bb.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note)}</td><td><button class="lk d" data-bx="${x.id}">حذف</button></td></tr>`).join("");
- $("drows").innerHTML=Dd.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note)}</td><td><button class="lk d" data-dx="${x.id}">حذف</button></td></tr>`).join("");
+ let ts=0,ta=0,tdd=0,tb=0,tn=0,tpd=0,tsal=0;PR=[];
+ $("prow").innerHTML=emps.filter(e=>!e.left||e.left>=month).slice().sort((a,b)=>a.name.localeCompare(b.name,"ar")).map(e=>{const s=num(e.salary),a=by[e.name]||0,d=dby[e.name]||0,b=bby[e.name]||0,w=wk.find(x=>x.empId===e.id&&x.month===month),base=w?Math.round(num(w.days)*s/30):s,net=base-a-d+b,pd=pay.find(x=>x.empId===e.id&&x.month===month);ts+=base;ta+=a;tdd+=d;tb+=b;tn+=net;tsal+=s;if(pd)tpd+=num(pd.amount);PR.push({e,s,base,a,d,b,net,pd,w});return `<tr><td>${esc(e.name)}</td><td><input class="q" inputmode="decimal" value="${s||""}" placeholder="المرتب" data-si="${e.id}" aria-label="مرتب ${esc(e.name)}"></td><td><input class="q" inputmode="decimal" value="${w?w.days:""}" placeholder="كل الشهر" data-wi="${e.id}" aria-label="أيام شغل ${esc(e.name)}"> <button class="lk" data-ss="${e.id}">حفظ</button></td><td class="n">${f(base)}</td><td class="n">${f(a)}</td><td class="n">${f(d)}</td><td class="n">${f(b)}</td><td class="n"><b>${f(net)}</b></td><td>${pd?`<span style="color:var(--sales)">✓ اتدفع ${pd.date||""}</span>${num(pd.amount)!==net?` <small class="msg">(وقت الدفع ${f(pd.amount)})</small>`:""} <button class="lk" data-pu="${e.id}">تراجع</button>`:`<button class="btn" data-pp="${e.id}" data-net="${net}">تم الدفع</button>`} <button class="lk" data-pr="${e.id}">كشف</button></td></tr>`}).join("")||'<tr><td colspan="9" class="msg">ضيف الموظفين الأول.</td></tr>';
+ $("pfoot").innerHTML=emps.length?`<tr><td><b>الإجمالي</b></td><td class="n"><b>${f(tsal)}</b></td><td></td><td class="n"><b>${f(ts)}</b></td><td class="n"><b>${f(ta)}</b></td><td class="n"><b>${f(tdd)}</b></td><td class="n"><b>${f(tb)}</b></td><td class="n"><b>${f(tn)}</b></td><td>اتدفع ${f(tpd)} · فاضل ${f(tn-tpd)}</td></tr>`:"";
+ $("brows").innerHTML=Bb.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note||"—")}</td><td><button class="lk d" data-bx="${x.id}">حذف</button></td></tr>`).join("");
+ $("drows").innerHTML=Dd.slice().sort((a,b)=>(b.date||"")<(a.date||"")?-1:1).map(x=>`<tr><td>${x.date||"—"}</td><td>${esc(x.name)}</td><td class="n">${x.days?(DL[x.days]||x.days):"—"}</td><td class="n">${f(x.amount)}</td><td>${esc(x.note||"—")}</td><td><button class="lk d" data-dx="${x.id}">حذف</button></td></tr>`).join("");
  // العهدة – عرض بس، مش داخلة في أي حساب
  {const cp=capOf(month),col=cp.left<0?"var(--bad)":"var(--sales)";$("capm").textContent=mlabel(month);
   $("capsum").innerHTML=cp.has?`عهدة الشهر: <b>${f(cp.open)}</b> ج.م · صرف منها: <b>${f(cp.spent)}</b> · المتبقي: <b style="color:${col}">${f(cp.left)}</b>`:'مفيش عهدة مسجلة للشهر ده. اكتب الرقم فوق ودوس "حفظ العهدة".';
@@ -401,6 +456,11 @@ function render(){
  $("lockbtn").textContent=LK?"فتح الشهر للتعديل":"قفل الشهر (خلص خلاص)";$("lockbtn").className=LK?"btn g":"btn";
  $("rlist").innerHTML=roles.length?roles.map(r=>`<tr><td style="font-size:.78rem">${esc(r.id)}${r.email?"<br>"+esc(r.email):""}</td><td>${r.role==="viewer"?"عرض فقط":"تعديل كامل"}</td><td><button class="lk d" data-rdel="${esc(r.id)}">حذف</button></td></tr>`).join(""):'<tr><td colspan="3" class="msg">مفيش صلاحيات مخصصة — كل الحسابات تعديل كامل.</td></tr>';
  $("myuid").textContent=UID||"—";
+ $("alist").innerHTML=logs.length?logs.map(x=>{
+  let ts="";try{const d=new Date(x.at),p=n=>String(n).padStart(2,"0");ts=p(d.getDate())+"/"+p(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes())}catch(e){}
+  const who=(x.email||"").split("@")[0]||(x.uid||"").slice(0,6)||"—";
+  return `<tr><td style="white-space:nowrap;font-size:.78rem">${ts}</td><td style="font-size:.78rem">${esc(who)}</td><td style="white-space:nowrap">${esc(x.op||"")} ${esc(AUDN[x.col]||x.col||"")}</td><td style="font-size:.8rem">${esc(x.desc||"")}</td></tr>`;
+ }).join(""):'<tr><td colspan="4" class="msg">مفيش عمليات مسجلة لسه. أي حفظ أو حذف بعد كده هيظهر هنا.</td></tr>';
 }
 
 function twice(t){if(t.dataset.sure)return true;t.dataset.sure=1;const o=t.textContent;t.textContent="تأكيد؟";setTimeout(()=>{delete t.dataset.sure;t.textContent=o},3000);return false}
@@ -469,6 +529,7 @@ function dedPrev(){const n=$("dn").value.trim(),e=emps.find(x=>x.name===n),dy=nu
 ["dn","dd","da"].forEach(i=>{$(i).oninput=dedPrev;$(i).onchange=dedPrev});
 $("dsave").onclick=async()=>{const name=$("dn").value.trim(),dy=num($("dd").value),ov=num($("da").value),date=$("dt").value||today,e=emps.find(x=>x.name===name);
  if(!name){flash("dok","اكتب اسم الموظف.");return}
+ if(!$("dnote").value.trim()){flash("dok","اكتب سبب الخصم الأول.");return}
  let amt=ov;if(!ov){if(!dy){flash("dok","اكتب عدد الأيام أو مبلغ الخصم.");return}if(!e||!num(e.salary)){flash("dok","سجّل مرتب الموظف الأول عشان أحسب الخصم.");return}amt=Math.round(dy*num(e.salary)/30)}
  if(noWrite(date.slice(0,7),"dok"))return;
  try{await db.collection("deductions").add({name,date,days:ov?0:dy,amount:amt,note:$("dnote").value.trim()});month=date.slice(0,7);$("dn").value=$("dd").value=$("da").value=$("dnote").value="";dedPrev();flash("dok","اتسجل خصم "+f(amt)+" على "+name)}catch(err){flash("dok","الحفظ فشل: ممكن صلاحيتك للعرض بس.")}};
@@ -480,6 +541,7 @@ $("capsave").onclick=async()=>{if(noWrite(month,"capok"))return;try{await db.col
 $("cosave").onclick=async()=>{const amount=num($("coa").value),date=$("cod").value||today,note=$("con").value.trim();if(!amount){flash("cook","اكتب المبلغ الأول.");return}if(noWrite(date.slice(0,7),"cook"))return;try{await db.collection("custody").add({kind:"out",month:date.slice(0,7),date,amount,note});month=date.slice(0,7);$("coa").value=$("con").value="";$("cod").value=today;flash("cook","اتسجل صرف "+f(amount)+" من العهدة.")}catch(e){flash("cook","الحفظ فشل: ممكن صلاحيتك للعرض بس.")}};
 $("bsave").onclick=async()=>{const name=$("bn").value.trim(),dy=num($("bd").value),ov=num($("ba").value),date=$("bt").value||today,e=emps.find(x=>x.name===name);
  if(!name){flash("bok","اكتب اسم الموظف.");return}
+ if(!$("bnote").value.trim()){flash("bok","اكتب سبب الزيادة الأول.");return}
  let amt=ov;if(!ov){if(!dy){flash("bok","اختار عدد الأيام أو اكتب مبلغ الزيادة.");return}if(!e||!num(e.salary)){flash("bok","سجّل مرتب الموظف الأول عشان أحسب الزيادة.");return}amt=Math.round(dy*num(e.salary)/30)}
  if(noWrite(date.slice(0,7),"bok"))return;
  try{await db.collection("bonuses").add({name,date,days:ov?0:dy,amount:amt,note:$("bnote").value.trim()});month=date.slice(0,7);$("bn").value=$("bd").value=$("ba").value=$("bnote").value="";bonPrev();flash("bok","اتسجلت زيادة "+f(amt)+" لـ"+name)}catch(err){flash("bok","الحفظ فشل: ممكن صلاحيتك للعرض بس.")}};
@@ -519,11 +581,11 @@ $("bk").onclick=async()=>{
 };
 function doPrint(html){const a=$("printArea");a.innerHTML=html;document.body.classList.add("printing");const done=()=>{a.innerHTML="";document.body.classList.remove("printing");window.removeEventListener("afterprint",done)};window.addEventListener("afterprint",done);setTimeout(()=>window.print(),80)}
 function printSlip(id){const r=PR.find(x=>x.e.id===id);if(!r)return;const e=r.e,mo=x=>x.date?x.date.slice(0,7)===month:true,A=advs.filter(a=>a.name===e.name&&mo(a)),Dx=ded.filter(a=>a.name===e.name&&mo(a)),Bx=bon.filter(a=>a.name===e.name&&mo(a));
- const list=arr=>arr.length?`<table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${x.date||""}</td><td>${f(x.amount)}</td><td>${esc(x.note||(x.days?(DL[x.days]||x.days):""))}</td></tr>`).join("")}</tbody></table>`:"<p>—</p>";
+ const list=arr=>arr.length?`<table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>السبب</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${x.date||""}</td><td>${f(x.amount)}</td><td>${esc(x.note||"—")}${x.days?` <small>(${DL[x.days]||x.days+" يوم"})</small>`:""}</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(arr.reduce((a,b)=>a+num(b.amount),0))}</th><th></th></tr></tfoot></table>`:"<p>—</p>";
  doPrint(`<h1>coya café – كشف مرتب</h1><p>الموظف: <b>${esc(e.name)}</b> &nbsp; الشهر: <b>${mlabel(month)}</b></p><table><tr><th>المرتب الشهري</th><td>${f(r.s)}</td><th>أيام الشغل</th><td>${r.w?r.w.days:"كل الشهر"}</td></tr><tr><th>المرتب المستحق</th><td>${f(r.base)}</td><th>الصافي</th><td><b>${f(r.net)}</b></td></tr></table><h2>السلف</h2>${list(A)}<h2>الخصومات</h2>${list(Dx)}<h2>الزيادات</h2>${list(Bx)}<p>حالة الدفع: <b>${r.pd?"اتدفع "+(r.pd.date||""):"لم يُدفع بعد"}</b></p><div class="sig"><span>توقيع الموظف: ..................</span><span>توقيع المسؤول: ..................</span></div>`)}
 function monthReport(){const D=days.filter(inM).sort((a,b)=>a.date<b.date?-1:1),S=D.reduce((x,d)=>x+tot(d),0),E=D.reduce((x,d)=>x+num(d.exp),0);const cp=capOf(month);
  const {m:cm,s:cs}=catSum(D),un=Math.max(0,E-cs),crows=[...CATS.map(c=>[c,cm[c]||0]).filter(x=>x[1]>0),...(un>0?[["غير مصنف",un]]:[])].sort((a,b)=>b[1]-a[1]),it=expItems(D);
- doPrint(`<h1>coya café – كشف شهر ${mlabel(month)}</h1><p>تاريخ الطباعة: ${today}</p><h2>الملخص</h2><table><tr><th>إجمالي المبيعات</th><td>${f(S)}</td><th>المصروفات</th><td>${f(E)}</td><th>الصافي</th><td>${f(S-E)}</td></tr></table><h2>المرتبات</h2><table><thead><tr><th>الموظف</th><th>المرتب</th><th>المستحق</th><th>السلف</th><th>الخصومات</th><th>الزيادات</th><th>الصافي</th><th>الدفع</th></tr></thead><tbody>${PR.map(r=>`<tr><td>${esc(r.e.name)}</td><td>${f(r.s)}</td><td>${f(r.base)}</td><td>${f(r.a)}</td><td>${f(r.d)}</td><td>${f(r.b)}</td><td><b>${f(r.net)}</b></td><td>${r.pd?"اتدفع":"لسه"}</td></tr>`).join("")}</tbody></table><h2>اليومية</h2><table><thead><tr><th>التاريخ</th><th>كاش</th><th>فيزا</th><th>مصروفات</th><th>الصافي</th><th>ملاحظات</th></tr></thead><tbody>${D.map(d=>`<tr><td>${d.date}</td><td>${f(d.cash)}</td><td>${f(d.visa)}</td><td>${f(d.exp)}</td><td>${f(tot(d)-num(d.exp))}</td><td>${esc(d.note)}</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th colspan="2">${f(S)}</th><th>${f(E)}</th><th>${f(S-E)}</th><th></th></tr></tfoot></table>${crows.length?`<h2>المصروفات حسب البند</h2><table><thead><tr><th>البند</th><th>المبلغ</th><th>النسبة</th></tr></thead><tbody>${crows.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${f(v)}</td><td>${E?Math.round(v/E*100):0}%</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(E)}</th><th></th></tr></tfoot></table>`:""}${it.length?`<h2>تفصيل المصروفات</h2><table><thead><tr><th>التاريخ</th><th>البند</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${it.map(x=>`<tr><td>${x.date||""}</td><td>${esc(x.c)}</td><td>${f(x.a)}</td><td>${esc(x.n)}</td></tr>`).join("")}</tbody></table>`:""}<div style="${(cp.has||cp.outs.length)?'':'display:none'}"><div class="pb"></div><h1>coya café – العهدة</h1><p>الشهر: <b>${mlabel(month)}</b> &nbsp;|&nbsp; عهدة الشهر: <b>${f(cp.open)}</b> &nbsp;|&nbsp; المصروف منها: <b>${f(cp.spent)}</b> &nbsp;|&nbsp; المتبقي: <b>${f(cp.left)}</b></p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${cp.outs.length?cp.outs.map(o=>`<tr><td>${o.date||""}</td><td>${f(o.amount)}</td><td>${esc(o.note)}</td></tr>`).join(""):'<tr><td colspan="3">—</td></tr>'}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(cp.spent)}</th><th></th></tr></tfoot></table><div class="sig"><span>توقيع المسؤول: ..................</span></div></div>`)}
+ doPrint(`<h1>coya café – كشف شهر ${mlabel(month)}</h1><p>تاريخ الطباعة: ${today}</p><h2>الملخص</h2><table><tr><th>إجمالي المبيعات</th><td>${f(S)}</td><th>المصروفات</th><td>${f(E)}</td><th>الصافي</th><td>${f(S-E)}</td></tr></table><h2>المرتبات</h2><table><thead><tr><th>الموظف</th><th>المرتب</th><th>المستحق</th><th>السلف</th><th>الخصومات</th><th>الزيادات</th><th>الصافي</th><th>الدفع</th></tr></thead><tbody>${PR.map(r=>`<tr><td>${esc(r.e.name)}</td><td>${f(r.s)}</td><td>${f(r.base)}</td><td>${f(r.a)}</td><td>${f(r.d)}</td><td>${f(r.b)}</td><td><b>${f(r.net)}</b></td><td>${r.pd?"اتدفع":"لسه"}</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(PR.reduce((a,r)=>a+num(r.s),0))}</th><th>${f(PR.reduce((a,r)=>a+num(r.base),0))}</th><th>${f(PR.reduce((a,r)=>a+num(r.a),0))}</th><th>${f(PR.reduce((a,r)=>a+num(r.d),0))}</th><th>${f(PR.reduce((a,r)=>a+num(r.b),0))}</th><th>${f(PR.reduce((a,r)=>a+num(r.net),0))}</th><th></th></tr></tfoot></table><h2>اليومية</h2><table><thead><tr><th>التاريخ</th><th>كاش</th><th>فيزا</th><th>مصروفات</th><th>الصافي</th><th>ملاحظات</th></tr></thead><tbody>${D.map(d=>`<tr><td>${d.date}</td><td>${f(d.cash)}</td><td>${f(d.visa)}</td><td>${f(d.exp)}</td><td>${f(tot(d)-num(d.exp))}</td><td>${esc(d.note)}</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th colspan="2">${f(S)}</th><th>${f(E)}</th><th>${f(S-E)}</th><th></th></tr></tfoot></table>${crows.length?`<h2>المصروفات حسب البند</h2><table><thead><tr><th>البند</th><th>المبلغ</th><th>النسبة</th></tr></thead><tbody>${crows.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${f(v)}</td><td>${E?Math.round(v/E*100):0}%</td></tr>`).join("")}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(E)}</th><th></th></tr></tfoot></table>`:""}${it.length?`<h2>تفصيل المصروفات</h2><table><thead><tr><th>التاريخ</th><th>البند</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${it.map(x=>`<tr><td>${x.date||""}</td><td>${esc(x.c)}</td><td>${f(x.a)}</td><td>${esc(x.n)}</td></tr>`).join("")}</tbody></table>`:""}<div style="${(cp.has||cp.outs.length)?'':'display:none'}"><div class="pb"></div><h1>coya café – العهدة</h1><p>الشهر: <b>${mlabel(month)}</b> &nbsp;|&nbsp; عهدة الشهر: <b>${f(cp.open)}</b> &nbsp;|&nbsp; المصروف منها: <b>${f(cp.spent)}</b> &nbsp;|&nbsp; المتبقي: <b>${f(cp.left)}</b></p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>${cp.outs.length?cp.outs.map(o=>`<tr><td>${o.date||""}</td><td>${f(o.amount)}</td><td>${esc(o.note)}</td></tr>`).join(""):'<tr><td colspan="3">—</td></tr>'}</tbody><tfoot><tr><th>الإجمالي</th><th>${f(cp.spent)}</th><th></th></tr></tfoot></table><div class="sig"><span>توقيع المسؤول: ..................</span></div></div>`)}
 $("prm").onclick=monthReport;
 $("mnew").onchange=e=>{const v=e.target.value;if(v){xm.push(v);month=v;render()}e.target.value=""};
 
@@ -564,9 +626,27 @@ $("impf").onchange=async e=>{
   const fs=firebase.firestore();
   for(let i=0;i<list.length;i+=400){const b=fs.batch();list.slice(i,i+400).forEach(([c,id,d])=>b.set(fs.collection(c).doc(id),d));await b.commit()}
   alert("تم الاستيراد: "+list.length+" سجل.");
+  try{db.collection("audit").add({at:new Date().toISOString(),uid:UID||"",email:(firebase.auth().currentUser||{}).email||"",col:"import",op:"استيراد",month:"",desc:list.length+" سجل"})}catch(e){}
  }catch(err){alert("الاستيراد فشل: "+(err&&err.message||err))}
  e.target.value="";
 };
+
+// ---- أوفلاين + تثبيت التطبيق (PWA) ----
+function netUI(){const off=!navigator.onLine;const b=$("netbar");if(b)b.hidden=!off}
+addEventListener("online",netUI);addEventListener("offline",netUI);netUI();
+
+let deferred=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;const b=$("pwa");if(b)b.hidden=false});
+addEventListener("appinstalled",()=>{deferred=null;const b=$("pwa");if(b)b.hidden=true});
+$("pwa").onclick=async()=>{
+ if(!deferred)return;
+ deferred.prompt();
+ try{await deferred.userChoice}catch(e){}
+ deferred=null;$("pwa").hidden=true;
+};
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1")){
+ addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
 </script>
 </body>
 </html>
